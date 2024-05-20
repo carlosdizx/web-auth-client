@@ -1,43 +1,45 @@
-import {Component} from '@angular/core';
-import {RouterOutlet} from '@angular/router';
-import {client, server} from '@passwordless-id/webauthn'
-import {JsonPipe} from "@angular/common";
+import { Component } from '@angular/core';
+import { startRegistration } from '@simplewebauthn/browser';
+import {RegistrationResponseJSON} from "@simplewebauthn/types";
+import {FormsModule} from "@angular/forms";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, JsonPipe],
+  imports: [FormsModule],
   templateUrl: './app.component.html',
 })
-export default class AppComponent {
+export default class AuthComponent {
 
-  private readonly challenge = "a7c61ef9-dc23-4806-b486-2428938a547e"
+  public email: string = "ernesto.diaz@miliopay.com"
+  public name: string = "Ernresto Diaz"
 
-  public register = {}
-  public serverRegister = {}
+  public generateRegistrationOptions =  async () => {
+    const user = JSON.stringify({
+      "userName": this.email,
+      "userDisplayName": this.name
+    });
 
-  public registerDevice = async () => {
     try {
-      const registrationEncoded = await client.register("Milio", this.challenge, {
-        "authenticatorType": "auto",
-        "userVerification": "required",
-        "discoverable": "required",
-        "timeout": 60000,
-        "attestation": true,
-      })
 
-      this.register = registrationEncoded//
+      const headers = new Headers();
+      headers.append("Content-Type", "application/json");
 
-      const expected = {
-        challenge: this.challenge,
-        origin: "http://localhost:4200",
-      }
-      this.serverRegister = await server.verifyRegistration(registrationEncoded, expected)
+      const registrationOptions = await (await fetch("http://localhost:3000/generate-register-options", {
+        method: "POST",
+        headers,
+        body: user,
+      })).json()
+      return await startRegistration(registrationOptions)
     }
-    catch (error) {
-      alert("Error: " + error)
-      throw new Error(error as string)
+    catch (error: any) {
+      throw new Error(error)
     }
   }
-  protected readonly JSON = JSON;
+
+  public verifyRegistration = async (options: RegistrationResponseJSON) => {
+
+  }
+
+
 }

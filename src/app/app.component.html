@@ -1,7 +1,7 @@
-<h1>Hola</h1>
-<button (click)="registerDevice()">Sing Up</button>
-<router-outlet />
-<br>
-{{register | json}}
+<input type="email" [(ngModel)]="email" />
+<br />
+<input type="text" [(ngModel)]="name" />
+<br />
+<button (click)="generateRegistrationOptions()">Register</button>
 <hr>
-{{ serverRegister | json}}
+
