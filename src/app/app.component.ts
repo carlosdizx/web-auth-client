@@ -3,7 +3,10 @@ import {
   startRegistration,
   startAuthentication,
 } from '@simplewebauthn/browser';
-import { RegistrationResponseJSON } from '@simplewebauthn/types';
+import {
+  RegistrationResponseJSON,
+  AuthenticationResponseJSON,
+} from '@simplewebauthn/types';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -60,8 +63,10 @@ export default class AuthComponent {
   public authenticate = async () => {
     try {
       const options = await this.generateAuthenticationOptions();
+      await this.verifyAuthentication(options);
+      return alert('Authentication successful');
     } catch (error) {
-      console.log(error);
+      console.error(error);
       alert('Error in authentication');
     }
   };
@@ -73,4 +78,13 @@ export default class AuthComponent {
     ).json();
     return await startAuthentication(authOptions);
   };
+
+  private verifyAuthentication = async (options: AuthenticationResponseJSON) =>
+    await (
+      await fetch('http://localhost:3000/verify-authentication-options', {
+        method: 'POST',
+        headers: this.headers,
+        body: JSON.stringify(options),
+      })
+    ).json();
 }
