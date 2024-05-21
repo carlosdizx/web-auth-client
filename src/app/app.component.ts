@@ -1,5 +1,8 @@
 import { Component } from '@angular/core';
-import { startRegistration } from '@simplewebauthn/browser';
+import {
+  startRegistration,
+  startAuthentication,
+} from '@simplewebauthn/browser';
 import { RegistrationResponseJSON } from '@simplewebauthn/types';
 import { FormsModule } from '@angular/forms';
 
@@ -53,4 +56,21 @@ export default class AuthComponent {
         body: JSON.stringify(options),
       })
     ).json();
+
+  public authenticate = async () => {
+    try {
+      const options = await this.generateAuthenticationOptions();
+    } catch (error) {
+      console.log(error);
+      alert('Error in authentication');
+    }
+  };
+  private generateAuthenticationOptions = async () => {
+    const authOptions = await (
+      await fetch('http://localhost:3000/generate-authentication-options', {
+        headers: this.headers,
+      })
+    ).json();
+    return await startAuthentication(authOptions);
+  };
 }
