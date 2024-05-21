@@ -1,7 +1,7 @@
-import {Component} from '@angular/core';
-import {startRegistration} from '@simplewebauthn/browser';
-import {RegistrationResponseJSON} from "@simplewebauthn/types";
-import {FormsModule} from "@angular/forms";
+import { Component } from '@angular/core';
+import { startRegistration } from '@simplewebauthn/browser';
+import { RegistrationResponseJSON } from '@simplewebauthn/types';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-root',
@@ -10,39 +10,47 @@ import {FormsModule} from "@angular/forms";
   templateUrl: './app.component.html',
 })
 export default class AuthComponent {
-
   private readonly headers = new Headers();
 
   constructor() {
-    this.headers.append("Content-Type", "application/json");
+    this.headers.append('Content-Type', 'application/json');
   }
 
-  public email: string = "ernesto.diaz@miliopay.com"
-  public name: string = "Ernresto Diaz"
+  public email: string = 'ernesto.diaz@miliopay.com';
+  public name: string = 'Ernresto Diaz';
 
-  public generateRegistrationOptions =  async () => {
+  public register = async () => {
+    try {
+      const options = await this.generateRegistrationOptions();
+      return await this.verifyRegistration(options);
+    } catch (error) {
+      console.log(error);
+      alert('Registration error');
+    }
+  };
+
+  private generateRegistrationOptions = async () => {
     const dataUser = JSON.stringify({
-      "userName": this.email,
-      "userDisplayName": this.name
+      userName: this.email,
+      userDisplayName: this.name,
     });
 
-    try {
-
-      const registrationOptions = await (await fetch("http://localhost:3000/generate-register-options", {
-        method: "POST",
+    const registrationOptions = await (
+      await fetch('http://localhost:3000/generate-register-options', {
+        method: 'POST',
         headers: this.headers,
         body: dataUser,
-      })).json()
-      return await startRegistration(registrationOptions)
-    }
-    catch (error: any) {
-      throw new Error(error)
-    }
-  }
+      })
+    ).json();
+    return await startRegistration(registrationOptions);
+  };
 
-  public verifyRegistration = async (options: RegistrationResponseJSON) => {
-
-  }
-
-
+  private verifyRegistration = async (options: RegistrationResponseJSON) =>
+    await (
+      await fetch('http://localhost:3000/verify-register-options', {
+        method: 'POST',
+        headers: this.headers,
+        body: JSON.stringify(options),
+      })
+    ).json();
 }
