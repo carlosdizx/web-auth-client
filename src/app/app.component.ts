@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { startRegistration } from '@simplewebauthn/browser';
+import {Component} from '@angular/core';
+import {startRegistration} from '@simplewebauthn/browser';
 import {RegistrationResponseJSON} from "@simplewebauthn/types";
 import {FormsModule} from "@angular/forms";
 
@@ -11,24 +11,27 @@ import {FormsModule} from "@angular/forms";
 })
 export default class AuthComponent {
 
+  private readonly headers = new Headers();
+
+  constructor() {
+    this.headers.append("Content-Type", "application/json");
+  }
+
   public email: string = "ernesto.diaz@miliopay.com"
   public name: string = "Ernresto Diaz"
 
   public generateRegistrationOptions =  async () => {
-    const user = JSON.stringify({
+    const dataUser = JSON.stringify({
       "userName": this.email,
       "userDisplayName": this.name
     });
 
     try {
 
-      const headers = new Headers();
-      headers.append("Content-Type", "application/json");
-
       const registrationOptions = await (await fetch("http://localhost:3000/generate-register-options", {
         method: "POST",
-        headers,
-        body: user,
+        headers: this.headers,
+        body: dataUser,
       })).json()
       return await startRegistration(registrationOptions)
     }
